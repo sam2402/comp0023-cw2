@@ -1,0 +1,5 @@
+[command: python3 routing-aid.py compute-maxload -i tests-files/test06-igp.txt -d tests-files/test06-demands.txt -l tests-files/test06-lan.txt]
+
+Max link load: 66.7%
+Max loaded links: LA -> UCL; LA -> LON; LA -> NYC; UCL -> SYD; LON -> SYD; LON -> BEJ; NYC -> LON; BEJ -> SYD
+

@@ -1,0 +1,8 @@
+[command: python3 routing-aid.py compute-paths -i tests-files/test10-igp.txt -p tests-files/test10-path-pairs.txt -l tests-files/test10-lan.txt]
+
+pair1: SUN -> EDI -> POR
+pair2: SUN -> EDI -> LIV -> LEE
+pair3: EDI -> POR -> UCL2; EDI -> LIV -> UCL2; EDI -> UCL1 -> S11 -> S7 -> S1 -> UCL2
+pair4: UCL1 -> S11 -> S10 -> UCL3
+pair5: UCL3 -> S10 -> S11 -> S7 -> S1 -> UCL2 -> LIV
+

@@ -1,0 +1,6 @@
+DEMANDS 3
+label src dest bw
+demand_0 2 3 1000
+demand_1 0 3 500
+demand_2 2 1 500
+

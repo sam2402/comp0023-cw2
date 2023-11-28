@@ -1,0 +1,35 @@
+[command: python3 routing-aid.py optimize-weights -i tests-files/test07-igp.txt -d tests-files/test07-demands.txt -l tests-files/test07-lan.txt]
+
+Post-optimization max link load: 83.3%
+Post-optimization max loaded links: SYD -> UCL
+
+NODES 6
+id label
+0 NYC
+1 LON
+2 LA
+3 UCL
+4 BEJ
+5 SYD
+
+EDGES 18
+label src dest weight bw delay
+edge_0 0 1 21 1500 10
+edge_1 1 0 31 1500 10
+edge_2 0 2 2 1000 10
+edge_3 2 0 21 1000 10
+edge_4 1 3 24 1000 1
+edge_5 3 1 22 1000 1
+edge_6 2 3 2 1000 20
+edge_7 3 2 22 1000 20
+edge_8 1 2 72 500 15
+edge_9 2 1 12 500 15
+edge_10 1 4 11 1000 15
+edge_11 4 1 10 1000 15
+edge_12 4 5 22 500 10
+edge_13 5 4 2 500 10
+edge_14 3 5 2 1000 20
+edge_15 5 3 23 1000 20
+edge_16 1 5 72 1500 20
+edge_17 5 1 12 1500 20
+

@@ -1,0 +1,16 @@
+NODES 4
+id label
+0 SRC
+1 S1
+2 S2
+3 LON
+
+EDGES 6
+label src dest bw
+edge_0 0 1 1000
+edge_1 1 0 1000
+edge_2 1 2 1000
+edge_3 2 1 1000
+edge_4 2 3 1000
+edge_5 3 2 1000
+

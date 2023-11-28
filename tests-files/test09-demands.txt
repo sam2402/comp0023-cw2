@@ -1,0 +1,12 @@
+DEMANDS 10
+label src dest bw
+demand_0 14 4 147
+demand_1 14 13 82
+demand_2 14 7 177
+demand_3 14 0 108
+demand_4 14 10 168
+demand_5 9 12 182
+demand_6 9 7 123
+demand_7 9 15 81
+demand_8 0 14 198
+demand_9 0 10 160

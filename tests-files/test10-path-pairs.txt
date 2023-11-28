@@ -1,0 +1,5 @@
+pair1: SUN POR
+pair2: SUN LEE
+pair3: EDI UCL2
+pair4: UCL1 UCL3
+pair5: UCL3 LIV

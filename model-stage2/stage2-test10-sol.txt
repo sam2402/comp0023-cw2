@@ -1,0 +1,5 @@
+[command: python3 routing-aid.py compute-maxload -i tests-files/test10-igp.txt -d tests-files/test10-demands.txt -l tests-files/test10-lan.txt]
+
+Max link load: 178.0%
+Max loaded links: EDI -> UCL1
+

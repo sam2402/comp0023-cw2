@@ -1,0 +1,34 @@
+NODES 8
+id label
+2 S1
+3 S2
+4 S3
+5 S4
+6 S5
+7 S6
+10 UCL
+11 LON
+
+EDGES 20
+label src dest bw
+edge_0 10 3 1000
+edge_1 3 10 1000
+edge_2 5 2 1000
+edge_3 2 5 1000
+edge_4 2 6 1000
+edge_5 6 2 1000
+edge_6 6 5 1000
+edge_7 5 6 1000
+edge_8 7 6 1000
+edge_9 6 7 1000
+edge_10 6 4 500
+edge_11 4 6 500
+edge_12 3 7 1000
+edge_13 7 3 1000
+edge_14 3 4 1000
+edge_15 4 3 1000
+edge_16 11 7 500
+edge_17 7 11 500
+edge_18 5 7 1000
+edge_19 7 5 1000
+

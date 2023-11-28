@@ -1,0 +1,5 @@
+[command: python3 routing-aid.py compute-maxload -i tests-files/test07-igp.txt -d tests-files/test07-demands.txt -l tests-files/test07-lan.txt]
+
+Max link load: 133.3%
+Max loaded links: SYD -> BEJ
+

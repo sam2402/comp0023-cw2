@@ -1,0 +1,57 @@
+NODES 14
+id label
+0 S1
+1 UCL2
+2 S2
+3 S3
+4 S4
+5 S5
+6 S6
+7 S7
+8 S8
+9 S9
+10 S10
+11 UCL3
+12 S11
+13 UCL1
+
+EDGES 38
+label src dest bw
+edge_0 0 7 1000
+edge_1 7 0 1000
+edge_2 0 2 1000
+edge_3 2 0 1000
+edge_4 2 3 1000
+edge_5 3 2 1000
+edge_6 2 6 1000
+edge_7 6 2 1000
+edge_8 2 5 1000
+edge_9 5 2 1000
+edge_10 3 5 1000
+edge_11 5 3 1000
+edge_12 3 8 1000
+edge_13 8 3 1000
+edge_14 4 5 1000
+edge_15 5 4 1000
+edge_16 4 6 1000
+edge_17 6 4 1000
+edge_18 4 7 1000
+edge_19 7 4 1000
+edge_20 5 6 1000
+edge_21 6 5 1000
+edge_22 5 9 1000
+edge_23 9 5 1000
+edge_24 7 8 1000
+edge_25 8 7 1000
+edge_26 7 12 1000
+edge_27 12 7 1000
+edge_28 9 10 1000
+edge_29 10 9 1000
+edge_30 10 12 1000
+edge_31 12 10 1000
+edge_32 0 1 1000
+edge_33 1 0 1000
+edge_34 10 11 1000
+edge_35 11 10 1000
+edge_36 12 13 1000
+edge_37 13 12 1000

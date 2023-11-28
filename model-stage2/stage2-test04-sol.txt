@@ -1,0 +1,5 @@
+[command: python3 routing-aid.py compute-maxload -i tests-files/test04-igp.txt -d tests-files/test04-demands.txt]
+
+Max link load: 100.0%
+Max loaded links: NYC -> DST
+

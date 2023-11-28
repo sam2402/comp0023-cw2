@@ -1,0 +1,5 @@
+[command: python3 routing-aid.py compute-paths -i tests-files/test03-igp.txt -p tests-files/test03-path-pairs.txt -l tests-files/test03-lan.txt]
+
+pair1: SRC -> DST; SRC -> S1 -> S2 -> LON -> NYC -> DST
+pair2: LON -> NYC -> DST
+

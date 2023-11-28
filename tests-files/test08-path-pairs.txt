@@ -1,0 +1,5 @@
+pair1: SYD LA
+pair2: BEJ UCL
+pair3: LON UCL
+pair4: NYC SYD
+

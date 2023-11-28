@@ -1,0 +1,7 @@
+[command: python3 routing-aid.py compute-paths -i tests-files/test08-igp.txt -p tests-files/test08-path-pairs.txt -l tests-files/test08-lan.txt]
+
+pair1: SYD -> UCL -> LA; SYD -> LON -> LA; SYD -> BEJ -> LON -> LA; SYD -> LON -> NYC -> LA; SYD -> BEJ -> LON -> NYC -> LA
+pair2: BEJ -> LON -> S6 -> S4 -> S1 -> S5 -> S3 -> S2 -> UCL
+pair3: LON -> S6 -> S4 -> S1 -> S5 -> S3 -> S2 -> UCL
+pair4: NYC -> LON -> SYD; NYC -> LON -> BEJ -> SYD
+

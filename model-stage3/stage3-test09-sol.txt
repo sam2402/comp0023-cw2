@@ -1,0 +1,91 @@
+[command: python3 routing-aid.py optimize-weights -i tests-files/test09-igp.txt -d tests-files/test09-demands.txt -l tests-files/test09-lan.txt]
+
+Post-optimization max link load: 17.9%
+Post-optimization max loaded links: SUN -> EDI
+
+NODES 16
+id label
+0 SUN
+1 NOT
+2 SHE
+3 LEI
+4 GLA
+5 BRI
+6 POR
+7 BRA
+8 BOU
+9 UCL2
+10 EDI
+11 LEE
+12 LIV
+13 MAN
+14 UCL1
+15 UCL3
+
+EDGES 64
+label src dest weight bw delay
+edge_0 0 1 1 5000 12
+edge_1 1 0 1 5000 12
+edge_2 0 5 2 1000 11
+edge_3 5 0 3 1000 11
+edge_4 0 10 1 2000 18
+edge_5 10 0 72 2000 18
+edge_6 1 2 1 2000 3
+edge_7 2 1 1 2000 3
+edge_8 2 3 1 1000 3
+edge_9 3 2 1 1000 3
+edge_10 2 4 56 5000 19
+edge_11 4 2 1 5000 19
+edge_12 2 5 1 2000 13
+edge_13 5 2 1 2000 13
+edge_14 3 4 100 500 3
+edge_15 4 3 1 500 3
+edge_16 5 7 4 500 16
+edge_17 7 5 2 500 16
+edge_18 5 10 4 5000 15
+edge_19 10 5 1 5000 15
+edge_20 6 7 39 5000 2
+edge_21 7 6 3 5000 2
+edge_22 6 8 2 500 5
+edge_23 8 6 2 500 5
+edge_24 6 9 1 1000 19
+edge_25 9 6 4 1000 19
+edge_26 6 10 1 500 11
+edge_27 10 6 3 500 11
+edge_28 7 10 3 5000 11
+edge_29 10 7 3 5000 11
+edge_30 7 11 2 1000 14
+edge_31 11 7 2 1000 14
+edge_32 7 12 3 5000 5
+edge_33 12 7 2 5000 5
+edge_34 7 13 3 5000 19
+edge_35 13 7 3 5000 19
+edge_36 8 9 1 500 10
+edge_37 9 8 2 500 10
+edge_38 8 12 1 500 5
+edge_39 12 8 2 500 5
+edge_40 8 13 2 1000 19
+edge_41 13 8 4 1000 19
+edge_42 9 12 1 5000 10
+edge_43 12 9 2 5000 10
+edge_44 9 14 2 1000 1
+edge_45 14 9 1 1000 1
+edge_46 9 15 2 1000 1
+edge_47 15 9 1 1000 1
+edge_48 10 11 2 5000 13
+edge_49 11 10 1 5000 13
+edge_50 10 12 4 5000 5
+edge_51 12 10 4 5000 5
+edge_52 10 13 3 2000 15
+edge_53 13 10 2 2000 15
+edge_54 10 14 36 500 4
+edge_55 14 10 17 500 4
+edge_56 11 12 3 5000 8
+edge_57 12 11 79 5000 8
+edge_58 11 14 2 2000 6
+edge_59 14 11 2 2000 6
+edge_60 13 14 2 2000 13
+edge_61 14 13 1 2000 13
+edge_62 14 15 1 1000 1
+edge_63 15 14 2 1000 1
+
