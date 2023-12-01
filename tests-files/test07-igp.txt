@@ -1,4 +1,4 @@
-NODES 4
+NODES 6
 id label
 0 NYC
 1 LON
