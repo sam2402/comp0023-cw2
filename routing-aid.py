@@ -12,16 +12,18 @@ import itertools
 # Main #
 ########
 
-def compute_paths(igp_filename: str, pairs_filename: str, lans_filename: str = None) -> dict[str, list[list[str]]]:
+NodeIdentifier = str
+
+def compute_paths(igp_filename: str, pairs_filename: str, lans_filename: str = None) -> dict[str, list[list[NodeIdentifier]]]:
     igp_network = generate_graph(igp_filename)
     lan_spanning_tree = create_spanning_tree(generate_graph(lans_filename, is_lan=True)) if lans_filename is not None else None
 
     network = merge_networks(igp_network, lan_spanning_tree) if lan_spanning_tree is not None else igp_network
 
-    pairs: dict[str, (str, str)] = get_pairs(pairs_filename)
+    pairs: dict[str, (NodeIdentifier, NodeIdentifier)] = get_pairs(pairs_filename)
 
     # Compute shortest path over WAN
-    shortest_paths = {
+    shortest_paths: dict[str, list[NodeIdentifier]] = {
         pair_id: list(nx.all_shortest_paths(network, pair[0], pair[1], weight="weight")) for pair_id, pair in pairs.items()
     }
 
@@ -48,8 +50,8 @@ def compute_paths(igp_filename: str, pairs_filename: str, lans_filename: str = N
 
     return shortest_paths
 
-def filter_paths(graph: nx.Graph, paths: list[list[str]]):
-    id_lists = [map(lambda node: nx.get_node_attributes(graph, "id")[node], path) for path in paths]
+def filter_paths(graph: nx.Graph, paths: list[list[NodeIdentifier]]) -> list[NodeIdentifier]:
+    id_lists = [list(map(lambda node: nx.get_node_attributes(graph, "id")[node], path)) for path in paths]
     min_path_index = id_lists.index(min(id_lists))
     return paths[min_path_index]
 
@@ -65,7 +67,7 @@ def create_spanning_tree(lan: nx.Graph) -> nx.Graph:
     
     return spanning_tree
 
-def get_intra_lan_path(tree: nx.Graph, src: str, dest: str):
+def get_intra_lan_path(tree: nx.Graph, src: NodeIdentifier, dest: NodeIdentifier) -> list[NodeIdentifier]:
 
     root = min(tree.nodes.data(), key=lambda node: node[1]["id"])[0]
 
@@ -82,7 +84,7 @@ def get_intra_lan_path(tree: nx.Graph, src: str, dest: str):
         path.append(node)
     return path
 
-def merge_networks(igp_network: nx.DiGraph, lan_network: nx.DiGraph) -> nx.DiGraph:
+def merge_networks(igp_network: nx.DiGraph, lan_network: nx.Graph) -> nx.DiGraph:
     shared_node_ids = set(igp_network.nodes).intersection(set(lan_network.nodes))
 
     graph = igp_network.copy()
@@ -129,7 +131,7 @@ def generate_graph(filename: str, is_lan = False) -> nx.DiGraph:
     
     return graph if not is_lan else graph.to_undirected()
 
-def get_pairs(filename: str) -> dict[str: tuple[str, str]]:
+def get_pairs(filename: str) -> dict[str: (NodeIdentifier, NodeIdentifier)]:
     pairs = {}
     with open(filename, 'r') as f:
         for line in f:
@@ -141,7 +143,7 @@ def get_pairs(filename: str) -> dict[str: tuple[str, str]]:
             pairs[pair_id] = (src_label, dest_label)
         return pairs
 
-def output_path(pair_id: str, paths: list[list[int]]) -> None:
+def output_path(pair_id: str, paths: list[list[NodeIdentifier]]) -> None:
     paths = "; ".join(" -> ".join(path) for path in paths)
     print(f"{pair_id}:", paths)
 
