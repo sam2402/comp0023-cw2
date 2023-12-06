@@ -49,7 +49,7 @@ def compute_paths(igp_filename: str, pairs_filename: str, lans_filename: str = N
     return shortest_paths
 
 def filter_paths(graph: nx.Graph, paths: list[list[str]]):
-    id_lists = [list(map(lambda node: nx.get_node_attributes(graph, "id")[node], path)) for path in paths]
+    id_lists = [map(lambda node: nx.get_node_attributes(graph, "id")[node], path) for path in paths]
     min_path_index = id_lists.index(min(id_lists))
     return paths[min_path_index]
 
