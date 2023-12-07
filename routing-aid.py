@@ -15,6 +15,24 @@ import itertools
 
 NodeIdentifier = str
 
+def optimize_weights(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> (float, list[(NodeIdentifier, NodeIdentifier)], nx.DiGraph):
+
+    curr_network = network
+    for _ in range(2000):
+        curr_network = optimise_network(demands, curr_network)
+
+    return *compute_maxload(demands, network), curr_network
+
+def optimise_network(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> (nx.DiGraph):
+    new_network = network.copy()
+    _, max_loaded_links = compute_maxload(demands, network)
+    for src, dest in network.edges:
+        if (src, dest) in max_loaded_links:
+            new_network[src][dest]["weight"] -= (1 if new_network[src][dest]["weight"] > 1 else 0)
+        else:
+            new_network[src][dest]["weight"] += 1
+    return new_network
+
 def compute_maxload(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> (float, list[(NodeIdentifier, NodeIdentifier)]):
     load_graphs = [compute_loads(demand, network) for demand in demands]
     edge_loads = {}
@@ -26,16 +44,27 @@ def compute_maxload(demands: list[(NodeIdentifier, NodeIdentifier, int)], networ
     edge_bandwidths = nx.get_edge_attributes(network, "bw") | (nx.get_edge_attributes(network.graph["lan"], "bw") if network.graph["lan"] is not None else {})
     edge_percentages = {(a, b): round(load/edge_bandwidths[(a, b)], 3) for (a, b), load in edge_loads.items()}
 
-    max_edges = []
+    max_edges = set()
     max_load = -1
     for edge, load in edge_percentages.items():
         if load > max_load:
             max_load = load
-            max_edges = [edge]
+            max_edges = set([edge])
         elif load == max_load:
-            max_edges.append(edge)
+            max_edges.add(edge)
 
     return max_load, max_edges
+
+# def compute_edge_load_percentages(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph, round=False) -> dict[(NodeIdentifier, NodeIdentifier), float]:
+#     load_graphs = [compute_loads(demand, network) for demand in demands]
+#     edge_loads = {}
+#     for load_graph in load_graphs:
+#         for a, b, attrs in load_graph.edges.data():
+#             if (a, b) not in edge_loads:
+#                 edge_loads[(a, b)] = 0
+#             edge_loads[(a, b)] += attrs["load"]
+#     edge_bandwidths = nx.get_edge_attributes(network, "bw") | (nx.get_edge_attributes(network.graph["lan"], "bw") if network.graph["lan"] is not None else {})
+#     return {(a, b): (round(load/edge_bandwidths[(a, b)], 3) if round else load/edge_bandwidths[(a, b)]) for (a, b), load in edge_loads.items()}
 
 def compute_loads(demand: (NodeIdentifier, NodeIdentifier, int), network: nx.DiGraph) -> nx.DiGraph:
     paths_graph = make_path_graph(network, demand[0], demand[1])
@@ -43,9 +72,8 @@ def compute_loads(demand: (NodeIdentifier, NodeIdentifier, int), network: nx.DiG
 
 def propagate_load(paths_graph: nx.DiGraph, src: NodeIdentifier, load: int) -> nx.DiGraph:
     node_queue: deque[(NodeIdentifier, int)] = deque([(src, load)])
-
     load_graph = paths_graph.copy()
-    while len(node_queue) != 0:
+    while len(node_queue) > 0:
         curr_node, curr_load = node_queue.popleft()
         successor_nodes = list(paths_graph.successors(curr_node))
         for successor_node in successor_nodes:
@@ -174,7 +202,7 @@ def parse_graph_file(filename: str, is_lan = False) -> nx.DiGraph:
     # Add edges
     edge_start_line_index = node_count+3
     edge_count = int(lines[edge_start_line_index].split(" ")[1])
-    for edge_line in lines[edge_start_line_index+2:edge_start_line_index+edge_count+2]:
+    for index, edge_line in enumerate(lines[edge_start_line_index+2:edge_start_line_index+edge_count+2]):
         edge_data = edge_line.split(" ")
         label = edge_data[0]
         src = int(edge_data[1])
@@ -183,7 +211,7 @@ def parse_graph_file(filename: str, is_lan = False) -> nx.DiGraph:
         bw = int(edge_data[4]) if not is_lan else int(edge_data[3])
         delay = int(edge_data[5]) if not is_lan else None
 
-        graph.add_edge(id_labels[src], id_labels[dest], bw=bw, lan=None)
+        graph.add_edge(id_labels[src], id_labels[dest], position=index, label=label, bw=bw, lan=None)
         if not is_lan:
             nx.set_edge_attributes(graph, {
                 (id_labels[src], id_labels[dest]): {"weight":weight, "delay":delay}
@@ -223,6 +251,19 @@ def output_pair_paths(pair_id: str, paths: list[list[NodeIdentifier]]) -> None:
     paths = "; ".join(" -> ".join(path) for path in paths)
     print(f"{pair_id}:", paths)
 
+def output_graph(graph: nx.DiGraph) -> None:
+    print(f"NODES {len(graph.nodes)}")
+    print("id label")
+    for node_label, attrs in sorted(graph.nodes.data(), key=lambda node: node[1]['id']):
+        print(f"{attrs['id']} {node_label}")
+    print("")
+    print(f"EDGES {len(graph.edges)}")
+    print("label src dest weight bw delay")
+    for src_label, dest_label, attrs in sorted(graph.edges.data(), key=lambda edge: edge[2]['position']):
+        src_id = graph.nodes[src_label]["id"]
+        dest_id = graph.nodes[dest_label]["id"]
+        print(f"{attrs['label']} {src_id} {dest_id} {attrs['weight']} {attrs['bw']} {attrs['delay']}")
+
 if __name__ == "__main__":
     # setup CLI parser
     commands_descriptions = "Commands: " + \
@@ -252,7 +293,7 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit()
     command = sys.argv[1]
-    if command not in ["compute-paths","compute-maxload","optimize-weights"]:
+    if command not in ["compute-paths", "compute-maxload", "optimize-weights"]:
         parser.print_help()
         sys.exit()
 
@@ -269,4 +310,12 @@ if __name__ == "__main__":
         max_link_load, max_loaded_links = compute_maxload(demands, network)
         print(f"Max link load: {round(max_link_load*100, 1)}%")
         print(f"Max loaded links: {'; '.join([f'{a} -> {b}' for (a, b) in max_loaded_links])}")
+    elif command == "optimize-weights":
+        network = parse_network_files(igpfile, lansfile)
+        demands = parse_demands_file(demandsfile, network)
+        max_link_load, max_loaded_links, new_network = optimize_weights(demands, network)
+        print(f"Post-optimization max link load: {round(max_link_load*100, 1)}%")
+        print(f"Post-optimization max loaded links: {'; '.join([f'{a} -> {b}' for (a, b) in max_loaded_links])}")
+        print("")
+        output_graph(new_network)
 
