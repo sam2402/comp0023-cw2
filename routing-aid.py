@@ -47,6 +47,8 @@ def set_all_weights_to_inverse_bw(network: nx.DiGraph) -> nx.DiGraph:
         new_network[src][dest]["weight"] = bandwidth_lcm//new_network[src][dest]["bw"]
     return new_network
 
+### COMPUTE MAX LOADS
+
 def compute_maxload(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> (float, list[(NodeIdentifier, NodeIdentifier)]):
     load_graphs = [compute_loads(demand, network) for demand in demands]
     edge_loads = {}
