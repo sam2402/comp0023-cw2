@@ -1,8 +1,10 @@
 #! /usr/bin/python3
 
 from collections import deque
+import math
 import sys
 from optparse import OptionParser
+import time
 import networkx as nx
 import itertools
 
@@ -15,22 +17,34 @@ import itertools
 
 NodeIdentifier = str
 
-def optimize_weights(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> (float, list[(NodeIdentifier, NodeIdentifier)], nx.DiGraph):
+### OPTIMIZE
 
-    curr_network = network
-    for _ in range(2000):
-        curr_network = optimise_network(demands, curr_network)
+def optimize_weights(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> nx.DiGraph:
+    return min(
+        (
+            *(set_all_paths_to_equal_weight(network, demand) for demand in demands),
+            set_all_weights_to_inverse_bw(network),
+            network
+        ),
+        key=lambda graph: compute_maxload(demands, graph)[0]
+    )
 
-    return *compute_maxload(demands, network), curr_network
-
-def optimise_network(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> (nx.DiGraph):
+def set_all_paths_to_equal_weight(network: nx.DiGraph, demand: (NodeIdentifier, NodeIdentifier, int)) -> nx.DiGraph:
     new_network = network.copy()
-    _, max_loaded_links = compute_maxload(demands, network)
+    (src, dest, _) = demand
+    paths = sorted(nx.all_simple_edge_paths(network, source=src, target=dest), key=len, reverse=True)
+    common_len_multiple = math.lcm(*map(len, paths))
+
+    for path in paths:
+        for a, b in path:
+            new_network[a][b]["weight"] = common_len_multiple//len(path)
+    return new_network
+
+def set_all_weights_to_inverse_bw(network: nx.DiGraph) -> nx.DiGraph:
+    new_network = network.copy()
+    bandwidth_lcm = math.lcm(*(edge_data[2]["bw"] for edge_data in network.edges.data()))
     for src, dest in network.edges:
-        if (src, dest) in max_loaded_links:
-            new_network[src][dest]["weight"] -= (1 if new_network[src][dest]["weight"] > 1 else 0)
-        else:
-            new_network[src][dest]["weight"] += 1
+        new_network[src][dest]["weight"] = bandwidth_lcm//new_network[src][dest]["bw"]
     return new_network
 
 def compute_maxload(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph) -> (float, list[(NodeIdentifier, NodeIdentifier)]):
@@ -42,7 +56,7 @@ def compute_maxload(demands: list[(NodeIdentifier, NodeIdentifier, int)], networ
                 edge_loads[(a, b)] = 0
             edge_loads[(a, b)] += attrs["load"]
     edge_bandwidths = nx.get_edge_attributes(network, "bw") | (nx.get_edge_attributes(network.graph["lan"], "bw") if network.graph["lan"] is not None else {})
-    edge_percentages = {(a, b): round(load/edge_bandwidths[(a, b)], 3) for (a, b), load in edge_loads.items()}
+    edge_percentages = {edge: load/edge_bandwidths[edge] for edge, load in edge_loads.items()}
 
     max_edges = set()
     max_load = -1
@@ -54,17 +68,6 @@ def compute_maxload(demands: list[(NodeIdentifier, NodeIdentifier, int)], networ
             max_edges.add(edge)
 
     return max_load, max_edges
-
-# def compute_edge_load_percentages(demands: list[(NodeIdentifier, NodeIdentifier, int)], network: nx.DiGraph, round=False) -> dict[(NodeIdentifier, NodeIdentifier), float]:
-#     load_graphs = [compute_loads(demand, network) for demand in demands]
-#     edge_loads = {}
-#     for load_graph in load_graphs:
-#         for a, b, attrs in load_graph.edges.data():
-#             if (a, b) not in edge_loads:
-#                 edge_loads[(a, b)] = 0
-#             edge_loads[(a, b)] += attrs["load"]
-#     edge_bandwidths = nx.get_edge_attributes(network, "bw") | (nx.get_edge_attributes(network.graph["lan"], "bw") if network.graph["lan"] is not None else {})
-#     return {(a, b): (round(load/edge_bandwidths[(a, b)], 3) if round else load/edge_bandwidths[(a, b)]) for (a, b), load in edge_loads.items()}
 
 def compute_loads(demand: (NodeIdentifier, NodeIdentifier, int), network: nx.DiGraph) -> nx.DiGraph:
     paths_graph = make_path_graph(network, demand[0], demand[1])
@@ -93,7 +96,9 @@ def make_path_graph(network: nx.DiGraph, src: NodeIdentifier, dest: NodeIdentifi
                 path_graph[a][b][attr] = val
             path_graph[a][b]["load"] = 0
     return path_graph
-    
+
+### COMPUTE PATHS
+
 def compute_paths(pairs: dict[str, (NodeIdentifier, NodeIdentifier)], network: nx.DiGraph) -> dict[str, list[list[NodeIdentifier]]]:
     # Compute shortest path over WAN
     shortest_paths: dict[str, list[NodeIdentifier]] = {
@@ -119,9 +124,9 @@ def compute_paths(pairs: dict[str, (NodeIdentifier, NodeIdentifier)], network: n
                     new_path[i+1:i+1] = lan_paths[(hop1, hop2)][1:-1]
                 i += 1
             
-            paths[path_index] = new_path
+            paths[path_index] = new_path            
 
-    return shortest_paths
+    return {path_id: list(filter(lambda path: len(path) == len(set(path)), paths)) for path_id, paths in shortest_paths.items()}
 
 def filter_paths(graph: nx.DiGraph, paths: list[list[NodeIdentifier]]) -> list[NodeIdentifier]:
     id_lists = [list(map(lambda node: nx.get_node_attributes(graph, "id")[node], path)) for path in paths]
@@ -176,6 +181,8 @@ def get_node_label_from_id(graph: nx.DiGraph, id: int) -> NodeIdentifier:
         if node[1]["id"] == id:
             return node[0]
     raise ValueError(f"No such node with id: {id}")
+
+### PARSING
 
 def parse_network_files(igp_filename: str, lans_filename: str = None) -> nx.DiGraph:
     igp_network = parse_graph_file(igp_filename)
@@ -313,7 +320,8 @@ if __name__ == "__main__":
     elif command == "optimize-weights":
         network = parse_network_files(igpfile, lansfile)
         demands = parse_demands_file(demandsfile, network)
-        max_link_load, max_loaded_links, new_network = optimize_weights(demands, network)
+        new_network = optimize_weights(demands, network)
+        max_link_load, max_loaded_links = compute_maxload(demands, new_network)
         print(f"Post-optimization max link load: {round(max_link_load*100, 1)}%")
         print(f"Post-optimization max loaded links: {'; '.join([f'{a} -> {b}' for (a, b) in max_loaded_links])}")
         print("")
