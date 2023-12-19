@@ -4,12 +4,32 @@ from collections import deque
 import math
 import sys
 from optparse import OptionParser
-import time
 import networkx as nx
 import itertools
 
 # TODO: optionally, add the description of your strategy for stage 3 here. 
 # <a few sentences>
+
+# I leveraged two main insights in stage 3 and created a function for each of these approaches that each outputs a network with new weights.
+# The maximal load is computed for each of these networks, and the returned IGP weights are those that correspond to the minimum maximal link load.
+# These insights were:
+#     1. The flow should be penalised for using links with low bandwidth.
+#     2. The flow should have maximal branching so as to minimise the load on any one link.
+
+# For 1, each link weight is set to be proportional to the inverse of its bandwidth.
+# This is done by computing the lowest common multiple of all link bandwidths and then setting the link weight to LCM//bw.
+
+# Approach two is related to a problem known as equal-cost multi-path routing.
+# I initially aimed write a function that would return a graph for each demand, where all paths from source to target have equal weight.
+# The next stage would then have been to combine these graphs into one graph while preserving the respective equal costs. 
+
+# When paths share nodes, even the first part of this problem is hard and as such I adopted a more heuristic approach.
+# I found all paths from source to target and set the weight of each edge to be proportional to the inverse of the path length.
+# Depending on the topography of the graph, first sorting the paths from longest to shortest or vice verse can yield better results so both are performed \
+# and the returned graph is that which has the minimum maximal link load.
+
+# Approach two works particularly well in cases where there is only one demand, but generally yields improvements across the test cases;
+# and approach one works well in cases with more complex networks such as tests 9 and 10 where it is very close to or matches the baseline solution.
 
 ########
 # Main #
@@ -23,21 +43,22 @@ def optimize_weights(demands: list[(NodeIdentifier, NodeIdentifier, int)], netwo
     return min(
         (
             *(set_all_paths_to_equal_weight(network, demand) for demand in demands),
+            *(set_all_paths_to_equal_weight(network, demand, reverse_sort=False) for demand in demands),
             set_all_weights_to_inverse_bw(network),
             network
         ),
         key=lambda graph: compute_maxload(demands, graph)[0]
     )
 
-def set_all_paths_to_equal_weight(network: nx.DiGraph, demand: (NodeIdentifier, NodeIdentifier, int)) -> nx.DiGraph:
+def set_all_paths_to_equal_weight(network: nx.DiGraph, demand: (NodeIdentifier, NodeIdentifier, int), reverse_sort=True) -> nx.DiGraph:
     new_network = network.copy()
     (src, dest, _) = demand
-    paths = sorted(nx.all_simple_edge_paths(network, source=src, target=dest), key=len, reverse=True)
-    common_len_multiple = math.lcm(*map(len, paths))
+    paths = sorted(nx.all_simple_edge_paths(network, source=src, target=dest), key=len, reverse=reverse_sort)
+    path_lens_lcm = math.lcm(*map(len, paths))
 
     for path in paths:
         for a, b in path:
-            new_network[a][b]["weight"] = common_len_multiple//len(path)
+            new_network[a][b]["weight"] = path_lens_lcm//len(path)
     return new_network
 
 def set_all_weights_to_inverse_bw(network: nx.DiGraph) -> nx.DiGraph:
