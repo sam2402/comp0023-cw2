@@ -29,7 +29,7 @@ import itertools
 # and the returned graph is that which has the minimum maximal link load.
 
 # Approach two works particularly well in cases where there is only one demand, but generally yields improvements across the test cases;
-# and approach one works well in cases with more complex networks such as tests 9 and 10 where it is very close to or matches the baseline solution.
+# and approach one works well in cases with more complex networks and more demands such as tests 9 and 10 where it is very close to or matches the baseline solution.
 
 ########
 # Main #
